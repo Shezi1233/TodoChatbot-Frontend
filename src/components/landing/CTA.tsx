@@ -11,14 +11,14 @@ export function CallToAction() {
       <div className="absolute inset-0 bg-gradient-to-b from-black to-primary/20 -z-10" />
 
       <div className="container px-4 md:px-6">
-        <div className="max-w-4xl mx-auto rounded-3xl border border-primary/20 bg-black/80 p-8 md:p-16 text-center shadow-[0_0_50px_rgba(255,215,0,0.1)]">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-white mb-6">
+        <div className="max-w-4xl mx-auto rounded-2xl sm:rounded-3xl border border-primary/20 bg-black/80 p-6 sm:p-8 md:p-16 text-center shadow-[0_0_50px_rgba(255,215,0,0.1)]">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tighter text-white mb-4 sm:mb-6">
             Ready to get organized?
           </h2>
-          <p className="text-white/60 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+          <p className="text-white/60 text-base sm:text-lg md:text-xl mb-6 sm:mb-10 max-w-2xl mx-auto">
             Join thousands of users who have simplified their task management with TaskFlow.
           </p>
-          <Button variant="yellow" size="xl" className="rounded-full px-12" asChild>
+          <Button variant="yellow" size="xl" className="rounded-full px-8 sm:px-12 w-full sm:w-auto" asChild>
             <Link href="/signup">
               Create Free Account <ArrowRight className="ml-2 h-5 w-5" />
             </Link>

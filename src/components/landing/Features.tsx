@@ -23,13 +23,13 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 bg-secondary/50">
+    <section className="py-16 sm:py-24 bg-secondary/50">
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center mb-10 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tighter text-white">
             Everything you need to stay organized
           </h2>
-          <p className="max-w-[700px] text-white/50 md:text-lg">
+          <p className="max-w-[700px] text-white/50 text-sm sm:text-base md:text-lg px-4 sm:px-0">
             Simple features that help you focus on what matters most.
           </p>
         </div>

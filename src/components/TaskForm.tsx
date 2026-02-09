@@ -87,13 +87,13 @@ export function TaskForm({
         />
       </div>
 
-      <div className="flex gap-3 justify-end pt-2">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2">
         {onCancel && (
           <Button
             type="button"
             variant="ghost"
             onClick={onCancel}
-            className="text-white/40 hover:text-white"
+            className="text-white/40 hover:text-white w-full sm:w-auto"
             disabled={isSubmitting}
           >
             Cancel
@@ -102,7 +102,7 @@ export function TaskForm({
         <Button
           type="submit"
           variant="yellow"
-          className="px-8 rounded-full"
+          className="px-8 rounded-full w-full sm:w-auto"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Add Task"}

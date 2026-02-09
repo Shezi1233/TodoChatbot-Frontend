@@ -123,7 +123,7 @@ export default function ChatWindow({ onClose }: { onClose: () => void }) {
   const isInputDisabled = isLoading || !isTokenValid || !userId;
 
   return (
-    <div className="fixed bottom-24 right-6 z-50 w-[360px] h-[500px] bg-black border border-yellow-600 rounded-lg shadow-xl flex flex-col overflow-hidden">
+    <div className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 z-50 w-auto sm:w-[360px] max-w-[calc(100vw-2rem)] h-[70vh] sm:h-[500px] max-h-[500px] bg-black border border-yellow-600 rounded-lg shadow-xl flex flex-col overflow-hidden">
       {/* Header */}
       <div className="bg-gray-900 p-3 border-b border-yellow-600 flex justify-between items-center">
         <h2 className="text-yellow-400 font-bold">TaskFlow AI</h2>

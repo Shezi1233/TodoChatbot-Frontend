@@ -99,10 +99,10 @@ export default function TasksPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-10">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase">My Tasks</h1>
-          <p className="text-white/40 text-sm font-medium mt-1">Manage your daily workflow and stay productive.</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">My Tasks</h1>
+          <p className="text-white/40 text-xs sm:text-sm font-medium mt-1">Manage your daily workflow and stay productive.</p>
         </div>
         <Button
           onClick={() => {
@@ -124,7 +124,7 @@ export default function TasksPage() {
       )}
 
       {(showForm || editingTask) && (
-        <div className="mb-12 p-8 bg-white/5 border border-white/10 rounded-2xl relative overflow-hidden">
+        <div className="mb-8 sm:mb-12 p-4 sm:p-8 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-primary" />

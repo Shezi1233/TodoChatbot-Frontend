@@ -17,7 +17,7 @@ export default function ChatWidget() {
       ) : (
         <button
           onClick={toggleChat}
-          className="fixed bottom-6 right-6 z-50 bg-yellow-400 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-yellow-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-yellow-400 text-black w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-yellow-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50"
           aria-label="Open chat"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">

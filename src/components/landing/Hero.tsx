@@ -53,7 +53,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-extrabold tracking-tighter text-white"
+            className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tighter text-white"
           >
             Organize your life with <span className="text-primary">TaskFlow</span>
           </motion.h1>
@@ -62,7 +62,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="max-w-[600px] text-white/60 text-lg md:text-xl md:leading-relaxed"
+            className="max-w-[600px] text-white/60 text-base sm:text-lg md:text-xl md:leading-relaxed px-4 sm:px-0"
           >
             The simplest way to manage your tasks and stay productive.
             Create, organize, and complete your todos with ease.

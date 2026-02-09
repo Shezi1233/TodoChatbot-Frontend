@@ -9,7 +9,8 @@ import {
   Settings,
   LogOut,
   CheckSquare,
-  ListTodo
+  ListTodo,
+  X
 } from "lucide-react"
 
 const sidebarItems = [
@@ -21,13 +22,34 @@ const sidebarItems = [
 
 import { useAuth } from "@/components/AuthProvider"
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
 
   return (
-    <aside className="w-64 bg-black border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-40">
-      <div className="p-6">
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside className={cn(
+        "w-64 bg-black border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out",
+        // Mobile: hidden by default, slide in when open
+        "max-md:-translate-x-full",
+        isOpen && "max-md:translate-x-0",
+        // Desktop: always visible
+        "md:translate-x-0"
+      )}>
+      <div className="p-6 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 group">
           <div className="bg-primary p-1 rounded group-hover:scale-110 transition-transform">
             <CheckSquare className="h-6 w-6 text-black" />
@@ -36,6 +58,14 @@ export function Sidebar() {
             Task<span className="text-primary">Flow</span>
           </span>
         </Link>
+        {/* Mobile close button */}
+        <button
+          onClick={onClose}
+          className="md:hidden p-2 text-white/60 hover:text-white transition-colors"
+          aria-label="Close sidebar"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       <nav className="flex-1 px-4 space-y-1 mt-4">
@@ -45,6 +75,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all group",
                 isActive

@@ -76,7 +76,8 @@ export function TaskItem({
           </div>
         </div>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Actions - always visible on touch, hover on desktop */}
+        <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"
