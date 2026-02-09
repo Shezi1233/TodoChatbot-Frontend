@@ -1,35 +1,55 @@
-// frontend/src/lib/api.ts
+/**
+ * Frontend API Client - Production Ready
+ *
+ * Uses NEXT_PUBLIC_API_URL environment variable for backend URL.
+ * All fetch calls include proper error handling and CORS-compatible headers.
+ */
+
 import { jwtDecode } from 'jwt-decode';
-import { useRouter } from 'next/navigation';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// =============================================================================
+// API Configuration
+// =============================================================================
+// IMPORTANT: Set NEXT_PUBLIC_API_URL in Vercel environment variables
+// Production fallback ensures the app works even if env var is missing
 
-// Helper function to get token from localStorage
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://shezi1344-todo-chatbot-backend.hf.space';
+
+// Log the API URL in development for debugging
+if (typeof window !== 'undefined') {
+  console.log('[API Client] Backend URL:', API_BASE_URL);
+}
+
+// =============================================================================
+// Token Management
+// =============================================================================
+
 const getToken = (): string | null => {
-  // Try to get token from the auth context first, then fall back to localStorage
-  const token = localStorage.getItem('token'); // Match the key used in auth.tsx
-  return token;
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
 };
 
-// Helper function to check if token is expired
 const isTokenExpired = (token: string): boolean => {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded: { exp: number } = jwtDecode(token);
     const currentTime = Date.now() / 1000;
     return decoded.exp < currentTime;
   } catch (error) {
-    console.error('Error decoding token:', error);
+    console.error('[API Client] Error decoding token:', error);
     return true;
   }
 };
 
-// Generic API request function with proper auth handling
+// =============================================================================
+// Core API Request Function
+// =============================================================================
+
 const apiRequest = async (
   endpoint: string,
   options: RequestInit = {},
   requireAuth: boolean = true
-) => {
-  // Add auth header if required
+): Promise<Response> => {
+  // Handle authentication
   if (requireAuth) {
     const token = getToken();
 
@@ -38,21 +58,21 @@ const apiRequest = async (
     }
 
     if (isTokenExpired(token)) {
-      // Clear expired token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/signin'; // Force redirect to login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/signin';
+      }
       throw new Error('Session expired. Please log in again.');
     }
 
-    // Add Authorization header
     options.headers = {
       ...options.headers,
       'Authorization': `Bearer ${token}`,
     };
   }
 
-  // Ensure Content-Type is set for requests that have a body
+  // Set Content-Type for JSON requests
   if (options.body && !(options.body instanceof FormData)) {
     options.headers = {
       ...options.headers,
@@ -60,91 +80,108 @@ const apiRequest = async (
     };
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+  // Build full URL - ensure no double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const fullUrl = `${API_BASE_URL}${cleanEndpoint}`;
 
-  // Handle 401 Unauthorized responses
-  if (response.status === 401) {
-    // Clear invalid token and redirect to login
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/signin';
-    throw new Error('Unauthorized. Please log in again.');
-  }
+  console.log(`[API Client] ${options.method || 'GET'} ${fullUrl}`);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
-  }
-
-  return response;
-};
-
-// Create a new chat session
-export const createChatSession = async (userId: number) => {
   try {
-    // In a real implementation, you might need to make an API call to initialize a session
-    // For now, we'll just return a placeholder
-    return {
-      conversationId: Date.now(), // This would come from the backend in a real implementation
-    };
-  } catch (error) {
-    console.error('Error creating chat session:', error);
-    throw error;
-  }
-};
-
-// Send a message to the backend
-export const sendMessage = async (message: string, userId: string, conversationId: number) => {
-  try {
-    const response = await apiRequest(`/api/${userId}/chat`, {
-      method: 'POST',
-      body: JSON.stringify({
-        message,
-        conversation_id: conversationId || null // Use null if conversationId is 0 or invalid
-      }),
+    const response = await fetch(fullUrl, {
+      ...options,
+      // CORS settings - let browser handle credentials
+      credentials: 'include',
     });
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error sending message:', error);
-
-    // Handle different types of errors
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/signin';
+      }
+      throw new Error('Unauthorized. Please log in again.');
     }
 
-    throw error;
-  }
-};
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+    }
 
-// Get conversation history
-export const getConversationHistory = async (userId: number, conversationId: number) => {
-  try {
-    const response = await apiRequest(`/api/${userId}/conversations/${conversationId}/messages`);
-
-    const data = await response.json();
-    return data.messages;
+    return response;
   } catch (error) {
-    console.error('Error fetching conversation history:', error);
+    // Handle network errors specifically
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('[API Client] Network error:', error);
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. ` +
+        'Please check if the backend is running and CORS is configured correctly.'
+      );
+    }
     throw error;
   }
 };
 
-// Task API functions
+// =============================================================================
+// Chat API
+// =============================================================================
+
+export const createChatSession = async (userId: number) => {
+  return {
+    conversationId: Date.now(),
+  };
+};
+
+export const sendMessage = async (
+  message: string,
+  userId: string,
+  conversationId: number
+) => {
+  const response = await apiRequest(`/api/${userId}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({
+      message,
+      conversation_id: conversationId || null,
+    }),
+  });
+
+  return response.json();
+};
+
+export const getConversationHistory = async (
+  userId: number,
+  conversationId: number
+) => {
+  const response = await apiRequest(
+    `/api/${userId}/conversations/${conversationId}/messages`
+  );
+  const data = await response.json();
+  return data.messages;
+};
+
+// =============================================================================
+// Task API
+// =============================================================================
+
 export const taskApi = {
-  // List tasks
   list: async (userId: string, status?: string, sort?: string) => {
     const params = new URLSearchParams();
-    if (status) params.append('status', status);
+    if (status && status !== 'all') params.append('status', status);
     if (sort) params.append('sort', sort);
 
-    const response = await apiRequest(`/api/${userId}/tasks?${params}`);
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/api/${userId}/tasks?${queryString}`
+      : `/api/${userId}/tasks`;
+
+    const response = await apiRequest(endpoint);
     return response.json();
   },
 
-  // Create task
-  create: async (userId: string, data: { title: string; description?: string }) => {
+  create: async (
+    userId: string,
+    data: { title: string; description?: string }
+  ) => {
     const response = await apiRequest(`/api/${userId}/tasks`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -152,8 +189,16 @@ export const taskApi = {
     return response.json();
   },
 
-  // Update task
-  update: async (userId: string, taskId: number, data: { title?: string; description?: string }) => {
+  get: async (userId: string, taskId: number) => {
+    const response = await apiRequest(`/api/${userId}/tasks/${taskId}`);
+    return response.json();
+  },
+
+  update: async (
+    userId: string,
+    taskId: number,
+    data: { title?: string; description?: string; completed?: boolean }
+  ) => {
     const response = await apiRequest(`/api/${userId}/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -161,15 +206,17 @@ export const taskApi = {
     return response.json();
   },
 
-  // Delete task
   delete: async (userId: string, taskId: number) => {
     const response = await apiRequest(`/api/${userId}/tasks/${taskId}`, {
       method: 'DELETE',
     });
+    // DELETE returns 204 No Content
+    if (response.status === 204) {
+      return { success: true };
+    }
     return response.json();
   },
 
-  // Toggle task completion
   toggle: async (userId: string, taskId: number, completed: boolean) => {
     const response = await apiRequest(`/api/${userId}/tasks/${taskId}/complete`, {
       method: 'PATCH',
@@ -177,4 +224,23 @@ export const taskApi = {
     });
     return response.json();
   },
+};
+
+// =============================================================================
+// Health Check (for debugging)
+// =============================================================================
+
+export const healthCheck = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  } catch (error) {
+    console.error('[API Client] Health check failed:', error);
+    throw new Error(`Backend health check failed: ${API_BASE_URL}/health`);
+  }
 };

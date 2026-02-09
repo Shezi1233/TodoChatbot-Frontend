@@ -15,12 +15,12 @@ export default function TestChatWidgetPage() {
 
   const login = () => {
     // Store the mock token in localStorage
-    localStorage.setItem('authToken', mockToken);
+    localStorage.setItem('token', mockToken);
     setIsLoggedIn(true);
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
   };
 
@@ -28,7 +28,7 @@ export default function TestChatWidgetPage() {
   let userInfo = null;
   if (isLoggedIn) {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (token) {
         const decoded: any = jwtDecode(token);
         userInfo = decoded;

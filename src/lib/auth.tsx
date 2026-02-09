@@ -1,8 +1,25 @@
-/** Simple JWT-based authentication for frontend. */
+/**
+ * Authentication Context - Production Ready
+ *
+ * Simple JWT-based authentication for frontend.
+ * Uses NEXT_PUBLIC_API_URL environment variable for backend URL.
+ */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
+
+// =============================================================================
+// Types
+// =============================================================================
 
 interface User {
   id: string;
@@ -19,21 +36,42 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
+// =============================================================================
+// Configuration
+// =============================================================================
+// Production fallback ensures the app works even if env var is missing
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://shezi1344-todo-chatbot-backend.hf.space";
+
+// Log API URL in development
+if (typeof window !== "undefined") {
+  console.log("[Auth] Backend URL:", API_URL);
+}
+
+// =============================================================================
+// Context
+// =============================================================================
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// =============================================================================
+// Helpers
+// =============================================================================
 
-// Helper function to check if token is expired
 const isTokenExpired = (token: string): boolean => {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded: { exp: number } = jwtDecode(token);
     const currentTime = Date.now() / 1000;
     return decoded.exp < currentTime;
   } catch (error) {
-    console.error('Error decoding token:', error);
+    console.error("[Auth] Error decoding token:", error);
     return true;
   }
 };
+
+// =============================================================================
+// Provider
+// =============================================================================
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -48,8 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (storedToken && storedUser) {
       try {
-        // Check if token is expired before using it
         if (isTokenExpired(storedToken)) {
+          console.log("[Auth] Token expired, clearing session");
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setIsLoading(false);
@@ -67,21 +105,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log("[Auth] Signing in...");
+
     const res = await fetch(`${API_URL}/api/users/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
+      credentials: "include",
     });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
+      console.error("[Auth] Sign in failed:", error);
       throw new Error(error.detail || "Sign in failed");
     }
 
     const data = await res.json();
     const accessToken = data.access_token;
 
-    // Check if the received token is valid
     if (isTokenExpired(accessToken)) {
       throw new Error("Received expired token from server");
     }
@@ -91,27 +132,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("token", accessToken);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    // Redirect to tasks page after successful sign in
+    console.log("[Auth] Sign in successful");
     router.push("/tasks");
   };
 
   const signUp = async (email: string, password: string, name: string) => {
+    console.log("[Auth] Signing up...");
+
     const res = await fetch(`${API_URL}/api/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name }),
+      credentials: "include",
     });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
+      console.error("[Auth] Sign up failed:", error);
       throw new Error(error.detail || "Sign up failed");
     }
 
-    // Auto sign in after sign up
+    console.log("[Auth] Sign up successful, auto signing in...");
     await signIn(email, password);
   };
 
   const signOut = () => {
+    console.log("[Auth] Signing out...");
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
@@ -120,11 +166,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, signIn, signUp, signOut, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, token, signIn, signUp, signOut, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
+
+// =============================================================================
+// Hook
+// =============================================================================
 
 export function useAuth() {
   const context = useContext(AuthContext);

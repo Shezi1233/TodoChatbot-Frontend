@@ -16,8 +16,8 @@ export default function ChatbotPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('authToken');
+    // Check if user is authenticated - use 'token' key (consistent with auth.tsx)
+    const token = localStorage.getItem('token');
     if (!token) {
       // If not authenticated, redirect to sign in
       router.push('/signin');
@@ -34,7 +34,8 @@ export default function ChatbotPage() {
       setIsLoading(false);
     } catch (error) {
       console.error('Error decoding token:', error);
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       router.push('/signin');
     }
   }, [router]);
@@ -58,9 +59,10 @@ export default function ChatbotPage() {
           <h1 className="text-xl font-bold text-yellow-400">Todo AI Chatbot</h1>
           <div className="flex items-center space-x-4">
             <span className="text-yellow-300">Welcome, {user.name}!</span>
-            <button 
+            <button
               onClick={() => {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 router.push('/signin');
               }}
               className="px-4 py-2 bg-yellow-600 text-black font-semibold rounded-md hover:bg-yellow-500 transition-colors"

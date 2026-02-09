@@ -5,6 +5,9 @@ import Message from './Message';
 import InputArea from './InputArea';
 import { Message as MessageType } from '@/types/chat';
 
+// API Base URL with fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://shezi1344-todo-chatbot-backend.hf.space';
+
 interface ChatWindowProps {
   userId: number;
 }
@@ -45,28 +48,45 @@ export default function ChatWindow({ userId }: ChatWindowProps) {
     setIsLoading(true);
 
     try {
-      // Get auth token
-      const token = localStorage.getItem('authToken');
+      // Get auth token - use 'token' key (consistent with auth.tsx)
+      const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Authentication token not found');
+        throw new Error('Authentication token not found. Please sign in again.');
       }
 
+      const url = `${API_BASE_URL}/api/${userId}/chat`;
+      console.log('[Chat] Sending message to:', url);
+
       // Send message to backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/${userId}/chat`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           message: input,
           conversation_id: null // Will be handled by backend
         }),
       });
 
+      // Enhanced error handling with detailed logging
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to get response from AI');
+        const errorText = await response.text();
+        console.error('[Chat] Error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        let errorMessage = 'Failed to get response from AI';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
