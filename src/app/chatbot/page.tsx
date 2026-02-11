@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode'; // Make sure to install this package
 import ChatWindow from '@/components/chatbot/ChatWindow';
 
 interface User {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -28,7 +28,7 @@ export default function ChatbotPage() {
       // Decode the JWT to get user info
       const decoded: any = jwtDecode(token);
       setUser({
-        id: parseInt(decoded.userId || decoded.sub || decoded.user_id),
+        id: decoded.sub || decoded.userId || decoded.user_id,
         name: decoded.name || decoded.username || 'User'
       });
       setIsLoading(false);

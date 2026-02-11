@@ -9,7 +9,7 @@ import { Message as MessageType } from '@/types/chat';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://shezi1344-todo-chatbot-backend.hf.space';
 
 interface ChatWindowProps {
-  userId: number;
+  userId: string;
 }
 
 export default function ChatWindow({ userId }: ChatWindowProps) {
